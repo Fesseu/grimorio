@@ -1,0 +1,28 @@
+GRIMÓRIO DA MESA — versão independente (não precisa do Claude)
+
+Para funcionar como app no celular, estes arquivos precisam estar num site
+com endereço https. Abrir o index.html direto do celular não funciona
+(o navegador bloqueia o carregamento do livro).
+
+Jeito mais fácil (GitHub Pages, grátis):
+1. Crie uma conta em github.com.
+2. Crie um repositório público (ex.: "grimorio").
+3. "Add file" > "Upload files" e envie TODOS os arquivos desta pasta.
+4. Settings > Pages > Source: "Deploy from a branch", branch "main", pasta "/ (root)" > Save.
+5. Em 1–2 minutos o site fica em https://SEU-USUARIO.github.io/grimorio/
+Mande esse link para a mesa.
+
+Instalar no celular:
+- iPhone (Safari): Compartilhar > Adicionar à Tela de Início.
+- Android (Chrome): menu ⋮ > Instalar app / Adicionar à tela inicial.
+Depois de aberto uma vez, funciona sem internet.
+
+As fichas ficam salvas no celular de cada um. Para passar fichas ou magias
+entre jogadores, use Ficha > Exportar código / Importar.
+
+Para atualizar: substitua os arquivos no repositório e mude a primeira linha
+do sw.js (grimorio-v1 -> grimorio-v2) para os celulares buscarem a nova versão.
+
+Licença: os textos de regras são Conteúdo Open Game do Tormenta RPG — Módulo
+Básico (Jambô Editora, 2010), sob a Open Game License 1.0a, cuja cópia está
+dentro do app (Ficha > Ver a licença). Mantenha a licença ao distribuir.

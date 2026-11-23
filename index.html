@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#a3132b">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Grimório">
+<title>Grimório da Mesa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: companheiro de mesa, direto; nada que atrapalhe na hora do turno.
+   IDEA: um grimório de bolso — cada magia, talento ou habilidade é uma página que sobe do fundo da tela.
+   PICTURE: a própria lista da ficha, com selos carmesim mostrando o nível de cada magia.
+   COLOUR and TYPE: vermelho-sangue sobre osso claro (à noite, quase preto). Cinzel nos títulos, Alegreya Sans no texto.
+   LAYOUT: cabeçalho curto com PV/PM, busca, lista, abas no polegar; detalhes, compêndio e formulários em folhas. */
+:root{color-scheme:light dark;
+--bg:light-dark(#f4efe9,#141012);--card:light-dark(#fffdfb,#1f191b);--ink:light-dark(#1b1416,#f0e7e2);
+--mut:light-dark(#6d6062,#a8999b);--line:light-dark(#e3d8d1,#33292b);--red:light-dark(#a3132b,#e2475d);
+--redbg:light-dark(#a3132b,#7d0f22);--soft:light-dark(#f7e4e3,#2c1a1d);--div:light-dark(#1f5f7a,#6cb6d6);--divs:light-dark(#e1eef3,#16262d)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 "Alegreya Sans",system-ui,sans-serif;overflow-x:clip;padding-bottom:84px}
+h1,h2,h3{font-family:Cinzel,Georgia,serif;margin:0;line-height:1.1;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.top{background:var(--redbg);color:#fff;padding:14px max(4vw,16px) 14px}
+.top-row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.who{display:flex;flex-direction:column;flex:1}
+.who h1{font-size:24px}
+.who small{opacity:.88;font-size:15px}
+.swap{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:0 12px;min-height:44px;color:#fff}
+.res{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.pool{background:rgba(0,0,0,.22);border-radius:12px;padding:6px 8px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.pool b{font-family:Cinzel,serif;font-size:13px}
+.pool span{font-size:20px;font-weight:700;white-space:nowrap}
+.pool button{width:40px;height:40px;border-radius:10px;border:0;background:rgba(255,255,255,.16);color:#fff;font-size:22px;line-height:1}
+.sync{font-size:13px;opacity:.8;margin-top:8px}
+main{max-width:760px;margin:0 auto;padding:16px max(4vw,16px)}
+.bar{display:flex;gap:8px;margin-bottom:12px}
+.bar input{flex:1;min-height:46px;border-radius:12px;border:1px solid var(--line);background:var(--card);padding:0 14px;font-size:16px}
+.add{min-height:46px;border-radius:12px;border:0;background:var(--red);color:#fff;padding:0 16px;font-weight:700;white-space:nowrap}
+.grp{font-family:Cinzel,serif;font-size:15px;color:var(--red);margin:18px 0 8px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.grp small{font-family:"Alegreya Sans",sans-serif;color:var(--mut);font-size:14px;white-space:nowrap}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-height:58px}
+.seal{flex:none;width:38px;height:38px;border-radius:50%;border:2px solid var(--red);color:var(--red);display:grid;place-items:center;font-family:Cinzel,serif;font-weight:700;font-size:17px}
+.seal.d{border-color:var(--div);color:var(--div)}
+.it{flex:1;display:flex;flex-direction:column}
+.it b{font-size:17px;line-height:1.25}
+.it small{color:var(--mut);font-size:14px;line-height:1.3}
+.num{font-weight:700;font-size:20px;white-space:nowrap;color:var(--red)}
+.tag{font-size:13px;background:var(--soft);color:var(--red);border-radius:99px;padding:2px 8px;white-space:nowrap}
+.tag.d{background:var(--divs);color:var(--div)}
+.empty{border:2px dashed var(--line);border-radius:16px;padding:22px;text-align:center;color:var(--mut)}
+.empty b{display:block;color:var(--ink);font-size:18px;margin-bottom:4px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none}
+.chip{flex:none;min-height:38px;border-radius:99px;border:1px solid var(--line);background:var(--card);padding:0 13px;font-size:15px}
+.chip[aria-pressed=true]{background:var(--red);border-color:var(--red);color:#fff;font-weight:700}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{border:0;background:none;min-height:62px;font-size:13px;color:var(--mut);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+nav button svg{width:23px;height:23px}
+nav button[aria-current=page]{color:var(--red);font-weight:700}
+.shade{position:fixed;inset:0;background:rgba(10,4,6,.5);z-index:10;display:flex;align-items:flex-end;justify-content:center}
+.shade[hidden]{display:none}
+.sheet{background:var(--card);width:100%;max-width:640px;max-height:90vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:8px 18px calc(22px + env(safe-area-inset-bottom));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 12px}
+.sheet h2{font-size:25px}
+.back{border:0;background:none;color:var(--red);font-weight:700;min-height:40px;padding:0;margin-bottom:4px}
+.meta{color:var(--red);font-weight:700;margin:5px 0 12px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:0 0 14px}
+.stats div{background:var(--card);padding:8px 10px}
+.stats dt{font-size:13px;color:var(--mut)}.stats dd{margin:0;font-weight:500}
+.stats .wide{grid-column:1/-1}
+.txt p{margin:0 0 10px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{min-height:46px;border-radius:12px;border:1px solid var(--line);background:var(--bg);padding:0 16px;font-weight:500}
+.btn.pri{background:var(--red);color:#fff;border-color:var(--red);font-weight:700}
+.btn.del{color:var(--red)}
+form label,.lbl{display:block;margin-bottom:10px;font-size:14px;color:var(--mut)}
+form input,form select,form textarea{display:block;width:100%;margin-top:3px;min-height:46px;border-radius:10px;border:1px solid var(--line);background:var(--bg);padding:8px 12px;font-size:16px;color:var(--ink)}
+form textarea{min-height:110px;resize:vertical}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 10px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 8px}
+.attrs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.attrs label{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 6px 6px;text-align:center;margin:0;font-family:Cinzel,serif;color:var(--red)}
+.attrs input{text-align:center;font-size:22px;font-weight:700;border:0;background:none;margin:0;min-height:38px;padding:0}
+.attrs i{display:block;font-style:normal;font-family:"Alegreya Sans",sans-serif;color:var(--mut);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.card h3{font-size:18px;margin-bottom:10px}
+.saves{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.save{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 6px;text-align:center;min-height:76px}
+.save b{display:block;font-family:Cinzel,serif;font-size:13px;color:var(--mut)}
+.save span{font-size:26px;font-weight:700;color:var(--red)}
+.chk{display:flex;align-items:center;gap:10px;color:var(--ink);font-size:17px}
+.chk input{width:24px;height:24px;min-height:0;margin:0;accent-color:var(--red)}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 14px;display:flex;gap:12px;align-items:center;z-index:20;max-width:92vw}
+.toast[hidden]{display:none}
+.toast button{background:none;border:0;color:var(--bg);font-weight:700;text-decoration:underline;min-height:36px}
+.note{font-size:14px;color:var(--mut)}
+.lic{white-space:pre-wrap;font-size:13px;line-height:1.45}
+.more{color:var(--mut);font-size:14px;text-align:center;padding:10px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-row">
+    <div class="who"><h1 id="cName">Personagem</h1><small id="cSub"></small></div>
+    <button class="swap" id="swap">Fichas ▾</button>
+  </div>
+  <div class="res">
+    <div class="pool"><button data-p="pv" data-d="-1" aria-label="Perder PV">−</button><div style="text-align:center"><b>PV</b><br><span id="pv"></span></div><button data-p="pv" data-d="1" aria-label="Recuperar PV">+</button></div>
+    <div class="pool"><button data-p="pm" data-d="-1" aria-label="Gastar PM">−</button><div style="text-align:center"><b>PM</b><br><span id="pm"></span></div><button data-p="pm" data-d="1" aria-label="Recuperar PM">+</button></div>
+  </div>
+  <div class="sync" id="sync">Carregando o livro…</div>
+</header>
+<main id="main"></main>
+<nav>
+  <button data-tab="magias"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.4 6.6L21 9l-5.3 4.2L17.6 20 12 16.2 6.4 20l1.9-6.8L3 9l6.6-.4z"/></svg>Magias</button>
+  <button data-tab="talentos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/></svg>Talentos</button>
+  <button data-tab="habs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 19l9-9M14 4l6 6-3 3-6-6zM4 20l2-5 3 3z"/></svg>Habilidades</button>
+  <button data-tab="pericias"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1.3" fill="currentColor"/><circle cx="15" cy="15" r="1.3" fill="currentColor"/><circle cx="15" cy="9" r="1.3" fill="currentColor"/><circle cx="9" cy="15" r="1.3" fill="currentColor"/></svg>Testes</button>
+  <button data-tab="ficha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Ficha</button>
+</nav>
+<div class="shade" id="shade" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden><span id="toastT"></span><button id="undo">Desfazer</button></div>
+
+<script>
+{
+const ATR=[['for','FOR','Força'],['des','DES','Destreza'],['con','CON','Constituição'],['int','INT','Inteligência'],['sab','SAB','Sabedoria'],['car','CAR','Carisma']];
+const SAVES=[['fort','Fortitude','con'],['ref','Reflexos','des'],['von','Vontade','sab']];
+const GRUPOS=['Combate','Perícia','Magia','Destino','Poder Concedido','Tormenta'];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const $=id=>document.getElementById(id);
+const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const mod=v=>Math.floor(((+v||0)-10)/2);
+const sg=n=>(n>=0?'+':'')+n;
+const cap=s=>s?s[0].toUpperCase()+s.slice(1):'';
+
+let C=null,MAG={},TAL={},HAB={},PER={},CLS={};
+const novaFicha=n=>({id:uid(),nome:n||'Novo personagem',raca:'',classe:'',nivel:1,bba:0,attrs:{for:10,des:10,con:10,int:10,sab:10,car:10},
+  pv:{a:8,m:8},pm:{a:0,m:0},ca:{arm:0,esc:0,out:0},pen:0,sv:{fort:0,ref:0,von:0},per:{},magias:[],talentos:[],habs:[],notas:''});
+function exemplo(){const f=novaFicha('Lyriel (exemplo)');Object.assign(f,{raca:'Elfos',classe:'Mago',nivel:3,bba:1,attrs:{for:8,des:14,con:10,int:17,sab:12,car:10},pv:{a:12,m:12},pm:{a:10,m:10}});
+ f.per={'Conhecimento':{t:1},'Identificar Magia':{t:1},'Percepção':{t:1}};
+ f.magias=[['Luz','arcana',0],['Detectar Magia','arcana',0],['Mísseis Mágicos','arcana',1],['Armadura Arcana','arcana',1],['Sono','arcana',1],['Escudo Arcano','arcana',1]].map(([r,t,n])=>({id:uid(),ref:r,tipo:t,nivel:n}));
+ f.talentos=['Potencializar Magia','Iniciativa Aprimorada'].map(r=>({id:uid(),ref:r}));
+ f.habs=['Mago|Magias','Mago|Vínculo Arcano','Elfos|Visão na Penumbra'].map(r=>({id:uid(),ref:r}));return f}
+
+let S={fichas:[exemplo()],atual:0},tab='magias',q='',undoFn=null,tTimer,ref=null,saveT;
+try{const r=JSON.parse(localStorage.getItem('grimtrpg')||'null');if(r&&r.fichas&&r.fichas.length)S=r}catch(e){}
+const F=()=>S.fichas[S.atual]||S.fichas[0];
+function save(){try{localStorage.setItem('grimtrpg',JSON.stringify(S))}catch(e){}
+ if(false){clearTimeout(saveT);saveT=setTimeout(async()=>{try{await ref.set({json:JSON.stringify(S),em:Date.now()});$('sync').textContent='Salvo na sua conta'}catch(e){$('sync').textContent='Salvo só neste aparelho'}},700)}}
+
+/* ---------- resolução das entradas ---------- */
+const half=f=>Math.floor((+f.nivel||1)/2);
+function getM(x){if(x.custom)return x;const b=MAG[x.ref];if(!b)return{...x,nome:x.ref,texto:'(não encontrada no livro)'};
+ const n=x.nivel??b.niveis[0][1],t=x.tipo||b.niveis[0][0];return{...b,id:x.id,tipo:t,nivel:n}}
+const getT=x=>x.custom?x:(TAL[x.ref]?{...TAL[x.ref],id:x.id}:{id:x.id,nome:x.ref,texto:''});
+const getH=x=>x.custom?x:(HAB[x.ref]?{...HAB[x.ref],id:x.id}:{id:x.id,nome:x.ref.split('|')[1],origem:x.ref.split('|')[0],texto:''});
+const lvTxt=m=>(m.niveis||[[m.tipo,m.nivel]]).map(([t,n])=>cap(t)+' '+n).join(' · ');
+function perTot(f,p){const s=f.per[p.nome]||{};return (s.t?(+f.nivel||1)+3:half(f))+mod(f.attrs[p.atr])+(+s.o||0)-(p.armadura?(+f.pen||0):0)}
+const saveTot=(f,k,a)=>half(f)+mod(f.attrs[a])+(+f.sv[k]||0);
+const caTot=f=>10+half(f)+mod(f.attrs.des)+(+f.ca.arm||0)+(+f.ca.esc||0)+(+f.ca.out||0);
+const deClasse=(f,nome)=>{const c=CLS[f.classe];return !!c&&norm(c.deClasse).includes(norm(nome))};
+function paras(t){return '<div class="txt">'+String(t||'').split('\n').filter(Boolean).map(p=>{let h=esc(p);h=h.replace(/^([A-ZÁÉÍÓÚÂÊÔÃÕÇ][^:.]{1,40}:)/,'<b>$1</b>');return '<p>'+h+'</p>'}).join('')+'</div>'}
+
+/* ---------- topo ---------- */
+function head(){const f=F();$('cName').textContent=f.nome||'Personagem';
+ $('cSub').textContent=[f.raca,f.classe&&(f.classe+' '+(f.nivel||1)+'º'),'CA '+caTot(f)].filter(Boolean).join(' · ');
+ $('pv').textContent=f.pv.a+'/'+f.pv.m;$('pm').textContent=f.pm.a+'/'+f.pm.m;
+ document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===tab?'page':'false'))}
+const bar=(ph,add)=>`<div class="bar"><input id="q" type="search" placeholder="${ph}" value="${esc(q)}" aria-label="Buscar">${add?`<button class="add" id="addBtn">+ ${add}</button>`:''}</div>`;
+const hit=o=>!q||norm(o.nome+' '+(o.texto||'')).includes(norm(q));
+const noBook=()=>C?'':'<p class="note">Carregando o livro…</p>';
+
+/* ---------- abas ---------- */
+function render(){head();const f=F();let h='';
+ if(tab==='magias'){h=bar('Buscar nas suas magias…','Magia')+noBook();const ms=f.magias.map(getM).filter(hit);
+  if(!f.magias.length)h+=`<div class="empty"><b>Grimório vazio</b>Toque em “+ Magia” para escolher magias do livro.</div>`;
+  else if(!ms.length)h+=`<div class="empty">Nada encontrado para “${esc(q)}”.</div>`;
+  for(let n=0;n<=9;n++){const l=ms.filter(m=>+m.nivel===n).sort((a,b)=>a.nome.localeCompare(b.nome));if(!l.length)continue;
+   h+=`<div class="grp">${n?n+'º nível':'Nível 0 (truques e preces)'}<small>${n?n+' PM':'sem custo'} · ${l.length}</small></div><div class="list">`+
+   l.map(m=>`<button class="item" data-open="magia" data-id="${m.id}"><span class="seal${m.tipo==='divina'?' d':''}">${n}</span><span class="it"><b>${esc(m.nome)}</b><small>${esc([m.dano,m.alcance,m.resistencia&&m.resistencia!=='nenhum'?m.resistencia:''].filter(Boolean).join(' · '))}</small></span></button>`).join('')+'</div>'}}
+ else if(tab==='talentos'){h=bar('Buscar nos seus talentos…','Talento')+noBook();const ts=f.talentos.map(getT).filter(hit);
+  if(!f.talentos.length)h+=`<div class="empty"><b>Nenhum talento ainda</b>Toque em “+ Talento” para escolher do livro.</div>`;
+  else if(!ts.length)h+=`<div class="empty">Nada encontrado para “${esc(q)}”.</div>`;
+  for(const g of [...GRUPOS,'Outro']){const l=ts.filter(t=>(GRUPOS.includes(t.grupo)?t.grupo:'Outro')===g);if(!l.length)continue;
+   h+=`<div class="grp">${g==='Poder Concedido'?'Poderes concedidos':g==='Outro'?'Outros':'Talentos de '+g.toLowerCase()}<small>${l.length}</small></div><div class="list">`+l.map(t=>`<button class="item" data-open="talento" data-id="${t.id}"><span class="it"><b>${esc(t.nome)}</b><small>${esc(t.prereq?'Pré-req.: '+t.prereq:'Sem pré-requisito')}</small></span></button>`).join('')+'</div>'}}
+ else if(tab==='habs'){h=bar('Buscar nas suas habilidades…','Habilidade')+noBook();const hs=f.habs.map(getH).filter(hit);
+  if(!f.habs.length)h+=`<div class="empty"><b>Nenhuma habilidade ainda</b>Adicione habilidades da sua classe e traços da sua raça.</div>`;
+  else if(!hs.length)h+=`<div class="empty">Nada encontrado para “${esc(q)}”.</div>`;
+  const os=[...new Set(hs.map(x=>x.origem||'Outras'))];
+  for(const o of os){const l=hs.filter(x=>(x.origem||'Outras')===o);h+=`<div class="grp">${esc(o)}<small>${l.length}</small></div><div class="list">`+l.map(x=>`<button class="item" data-open="hab" data-id="${x.id}"><span class="it"><b>${esc(x.nome)}</b><small>${esc(x.tipo==='Raça'?'Traço racial':x.tipo==='Classe'?'Habilidade de classe':'Personalizada')}</small></span></button>`).join('')+'</div>'}}
+ else if(tab==='pericias'){h=`<div class="grp" style="margin-top:0">Testes de resistência<small>½ nível + mod.</small></div><div class="saves">`+SAVES.map(([k,l,a])=>`<button class="save" data-sv="${k}"><b>${l}</b><span>${sg(saveTot(f,k,a))}</span></button>`).join('')+'</div>';
+  h+=bar('Buscar perícia…');
+  if(!C)h+=noBook();else{h+=`<p class="note">Treinada: nível + 3 graduações. Não treinada: metade do nível. Soma o modificador${f.pen?` e a penalidade de armadura (−${f.pen})`:''}.</p><div class="list">`+
+   C.pericias.filter(p=>!q||norm(p.nome).includes(norm(q))).map(p=>{const s=f.per[p.nome]||{},dc=deClasse(f,p.nome);return `<button class="item" data-open="per" data-id="${esc(p.nome)}"><span class="it"><b>${esc(p.nome)}</b><small>${p.atr.toUpperCase()}${p.treinada?' · só treinada':''}${p.armadura?' · armadura':''}</small></span>${s.t?'<span class="tag">treinada</span>':dc?'<span class="tag d">de classe</span>':''}<span class="num">${p.treinada&&!s.t?'—':sg(perTot(f,p))}</span></button>`}).join('')+'</div>'}}
+ else h=fichaTab(f);
+ $('main').innerHTML=h;bind()}
+
+function fichaTab(f){const cls=C?C.classes.map(c=>c.nome):[],rac=C?[...new Set(C.habilidades.filter(x=>x.tipo==='Raça').map(x=>x.origem))]:[];
+ const opt=(arr,v)=>`<option value="">—</option>`+arr.map(o=>`<option${o===v?' selected':''}>${esc(o)}</option>`).join('')+(v&&!arr.includes(v)?`<option selected>${esc(v)}</option>`:'');
+ const ci=CLS[f.classe];
+ return `<form id="fForm"><div class="card"><h3>Personagem</h3><label>Nome<input name="nome" value="${esc(f.nome)}"></label>
+  <div class="two"><label>Raça<select name="raca">${opt(rac,f.raca)}</select></label><label>Classe<select name="classe">${opt(cls,f.classe)}</select></label>
+  <label>Nível<input name="nivel" type="number" min="1" max="20" value="${esc(f.nivel)}"></label><label>Bônus base de ataque<input name="bba" type="number" value="${esc(f.bba)}"></label>
+  <label>PV máximos<input name="pvm" type="number" min="0" value="${esc(f.pv.m)}"></label><label>PM máximos<input name="pmm" type="number" min="0" value="${esc(f.pm.m)}"></label></div></div>
+  <div class="card"><h3>Habilidades</h3><div class="attrs">${ATR.map(([k,l])=>`<label>${l}<input name="a_${k}" type="number" min="1" max="40" value="${esc(f.attrs[k])}"><i id="m_${k}">${sg(mod(f.attrs[k]))}</i></label>`).join('')}</div></div>
+  <div class="card"><h3>Classe de armadura <span id="caT" style="color:var(--red)">${caTot(f)}</span></h3><p class="note" style="margin-top:-4px">10 + ½ nível + mod. Des + armadura + escudo + outros</p>
+  <div class="three"><label>Armadura<input name="ca_arm" type="number" value="${esc(f.ca.arm)}"></label><label>Escudo<input name="ca_esc" type="number" value="${esc(f.ca.esc)}"></label><label>Outros<input name="ca_out" type="number" value="${esc(f.ca.out)}"></label></div>
+  <label>Penalidade de armadura (nas perícias marcadas “armadura”)<input name="pen" type="number" min="0" value="${esc(f.pen)}"></label></div>
+  <div class="card"><h3>Anotações</h3><label>Equipamento, tesouro, lembretes<textarea name="notas">${esc(f.notas)}</textarea></label></div></form>
+  ${ci?`<div class="card"><h3>${esc(ci.nome)}</h3><dl class="stats"><div class="wide"><dt>Pontos de vida</dt><dd>${esc(cap(ci.pv))}</dd></div><div class="wide"><dt>Perícias treinadas</dt><dd>${esc(ci.treinadas)}</dd></div><div class="wide"><dt>Perícias de classe</dt><dd>${esc(ci.deClasse)}</dd></div><div class="wide"><dt>Talentos adicionais</dt><dd>${esc(ci.talentos)}</dd></div></dl></div>`:''}
+  <div class="card"><h3>Compartilhar com a mesa</h3><p class="note">Exporte o código desta ficha e mande no grupo. Quem importar pode adicionar as magias, talentos e habilidades à própria ficha, ou abrir como ficha nova.</p>
+  <div class="acts"><button class="btn" id="exp">Exportar código</button><button class="btn" id="imp">Importar</button><button class="btn pri" id="rest">Descansar (PV e PM cheios)</button></div></div>
+  <div class="card"><h3>Sobre o conteúdo</h3><p class="note">Os textos de regras são Conteúdo Open Game do Tormenta RPG — Módulo Básico (Jambô Editora, 2010), usados sob a Open Game License 1.0a. Nomes do cenário são Identidade do Produto da Jambô.</p><div class="acts"><button class="btn" id="lic">Ver a licença</button></div></div>`}
+
+function bind(){const qi=$('q');if(qi)qi.oninput=e=>{q=e.target.value;const p=e.target.selectionStart;render();const n=$('q');n.focus();n.setSelectionRange(p,p)};
+ const ab=$('addBtn');if(ab)ab.onclick=()=>browse({magias:'magia',talentos:'talento',habs:'hab'}[tab],true);
+ document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>b.dataset.open==='per'?perSheet(b.dataset.id):view(b.dataset.open,b.dataset.id));
+ document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>svSheet(b.dataset.sv));
+ const ff=$('fForm');if(ff){ff.oninput=ff.onchange=e=>{const d=new FormData(ff),f=F();['nome','raca','classe','notas'].forEach(k=>f[k]=d.get(k)||'');
+  f.nivel=Math.max(1,Math.min(20,+d.get('nivel')||1));f.bba=+d.get('bba')||0;f.pv.m=+d.get('pvm')||0;f.pm.m=+d.get('pmm')||0;f.pen=Math.abs(+d.get('pen')||0);
+  f.pv.a=Math.min(f.pv.a,f.pv.m);f.pm.a=Math.min(f.pm.a,f.pm.m);ATR.forEach(([k])=>{f.attrs[k]=+d.get('a_'+k)||0;$('m_'+k).textContent=sg(mod(f.attrs[k]))});
+  ['arm','esc','out'].forEach(k=>f.ca[k]=+d.get('ca_'+k)||0);$('caT').textContent=caTot(f);head();save();if(e.type==='change'&&e.target.tagName==='SELECT')render()};}
+ const ex=$('exp');if(ex){ex.onclick=expSheet;$('imp').onclick=impSheet;$('lic').onclick=licSheet;$('rest').onclick=()=>{const f=F();f.pv.a=f.pv.m;f.pm.a=f.pm.m;save();head();toast('PV e PM restaurados')}}}
+
+/* ---------- folhas ---------- */
+function openS(h){$('sheet').innerHTML='<div class="grab"></div>'+h;$('shade').hidden=false;$('sheet').scrollTop=0}
+function closeS(){$('shade').hidden=true}
+$('shade').onclick=e=>{if(e.target.id==='shade')closeS()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeS()});
+const LIST={magia:()=>F().magias,talento:()=>F().talentos,hab:()=>F().habs};
+const GET={magia:getM,talento:getT,hab:getH};
+
+function body(k,e){let h='';
+ if(k==='magia'){h+=`<div class="meta">${esc(lvTxt(e))}${e.descritores?' · '+esc(e.descritores):''}</div><dl class="stats">`+
+  [['Execução',e.execucao],['Alcance',e.alcance],['Alvo',e.alvo,1],['Efeito',e.efeito,1],['Área',e.area,1],['Duração',e.duracao],['Resistência',e.resistencia],['Dano / cura',e.dano||(e.custom?'':'— (não causa dano direto)'),1]].filter(r=>r[1]).map(([l,v,w])=>`<div class="${w?'wide':''}"><dt>${l}</dt><dd>${esc(v)}</dd></div>`).join('')+'</dl>'}
+ else if(k==='talento')h+=`<div class="meta">${esc(e.grupo?(e.grupo==='Poder Concedido'?'Poder concedido':'Talento de '+e.grupo.toLowerCase()):'Talento')}</div>${e.prereq?`<dl class="stats"><div class="wide"><dt>Pré-requisitos</dt><dd>${esc(e.prereq)}</dd></div></dl>`:''}`;
+ else h+=`<div class="meta">${esc(e.origem||'')}${e.tipo==='Raça'?' · traço racial':e.tipo==='Classe'?' · habilidade de classe':''}</div>`;
+ return h+paras(e.texto)}
+
+function view(k,id){const raw=LIST[k]().find(x=>x.id===id);if(!raw)return;const e=GET[k](raw);
+ let h=`<h2>${esc(e.nome)}</h2>`+body(k,e)+'<div class="acts">';
+ if(k==='magia'&&+e.nivel>0)h+=`<button class="btn pri" id="cast">Gastar ${e.nivel} PM</button>`;
+ h+=`${raw.custom?'<button class="btn" id="ed">Editar</button>':''}<button class="btn del" id="rm">Tirar da ficha</button></div>`;openS(h);
+ if($('ed'))$('ed').onclick=()=>form(k,raw);
+ $('rm').onclick=()=>{const L=LIST[k](),i=L.indexOf(raw);L.splice(i,1);save();closeS();render();toast('“'+e.nome+'” removida',()=>{L.splice(i,0,raw);save();render()})};
+ const cb=$('cast');if(cb)cb.onclick=()=>{const f=F(),c=+e.nivel;if(f.pm.a<c){toast('PM insuficiente ('+f.pm.a+')');return}f.pm.a-=c;save();head();closeS();toast(e.nome+': −'+c+' PM',()=>{f.pm.a+=c;save();head()})}}
+
+/* ---------- compêndio ---------- */
+let B={k:'magia',q:'',tipo:'',niv:'',grp:'',orig:''};
+function browse(k,reset){if(reset){B={k,q:'',tipo:'',niv:'',grp:'',orig:''};const f=F();
+  if(k==='magia'&&['Clérigo','Druida','Paladino','Ranger'].includes(f.classe))B.tipo='divina';if(k==='magia'&&['Mago','Feiticeiro'].includes(f.classe))B.tipo='arcana';
+  if(k==='hab')B.orig=f.classe||f.raca||''}
+ if(!C){openS('<h2>Livro</h2><p class="note">O livro ainda está carregando. Tente de novo em instantes.</p>');return}
+ const tit={magia:'Magias do livro',talento:'Talentos do livro',hab:'Habilidades do livro'}[k];
+ const chip=(attr,v,l,cur)=>`<button class="chip" data-${attr}="${esc(v)}" aria-pressed="${cur===v}">${esc(l)}</button>`;
+ let h=`<h2>${tit}</h2><div class="bar" style="margin-top:12px"><input id="bq" type="search" placeholder="Buscar pelo nome ou texto…" value="${esc(B.q)}" aria-label="Buscar no livro"></div>`;
+ let items=[];
+ if(k==='magia'){h+=`<div class="chips">${chip('tipo','','Todas',B.tipo)}${chip('tipo','arcana','Arcanas',B.tipo)}${chip('tipo','divina','Divinas',B.tipo)}</div><div class="chips">${chip('niv','','Todo nível',B.niv)}${[0,1,2,3,4,5,6,7,8,9].map(n=>chip('niv',String(n),n?n+'º':'0',B.niv)).join('')}</div>`;
+  items=C.magias.filter(m=>m.niveis.some(([t,n])=>(!B.tipo||t===B.tipo)&&(B.niv===''||n===+B.niv)))}
+ else if(k==='talento'){h+=`<div class="chips">${chip('grp','','Todos',B.grp)}${GRUPOS.map(g=>chip('grp',g,g==='Poder Concedido'?'Poderes':g,B.grp)).join('')}</div>`;items=C.talentos.filter(t=>!B.grp||t.grupo===B.grp)}
+ else{const os=[...new Set(C.habilidades.map(x=>x.origem))];h+=`<div class="chips">${chip('orig','','Todas',B.orig)}${os.map(o=>chip('orig',o,o,B.orig)).join('')}</div>`;items=C.habilidades.filter(x=>!B.orig||x.origem===B.orig)}
+ if(B.q){const n=norm(B.q);items=items.filter(x=>norm(x.nome).includes(n)).concat(items.filter(x=>!norm(x.nome).includes(n)&&norm(x.texto).includes(n)))}
+ else items=[...items].sort((a,b)=>a.nome.localeCompare(b.nome));
+ const have=new Set(LIST[k]().map(x=>x.ref));
+ const keyOf=x=>k==='hab'?x.origem+'|'+x.nome:x.nome;
+ h+=`<p class="note">${items.length} encontrada${items.length===1?'':'s'}</p><div class="list">`+items.slice(0,120).map((x,i)=>{
+  const sub=k==='magia'?lvTxt(x)+(x.dano?' · '+x.dano:x.alcance?' · '+x.alcance:''):k==='talento'?(x.grupo+(x.prereq?' · '+x.prereq:'')):(x.origem);
+  const lead=k==='magia'?`<span class="seal${x.niveis[0][0]==='divina'?' d':''}">${x.niveis[0][1]}</span>`:'';
+  return `<button class="item" data-b="${i}">${lead}<span class="it"><b>${esc(x.nome)}</b><small>${esc(sub)}</small></span>${have.has(keyOf(x))?'<span class="tag">na ficha</span>':''}</button>`}).join('')+'</div>'+
+  (items.length>120?`<p class="more">Mostrando 120. Refine a busca para ver o resto.</p>`:'')+
+  `<div class="acts"><button class="btn" id="manual">Criar ${k==='magia'?'magia':k==='talento'?'talento':'habilidade'} própria</button></div>`;
+ openS(h);
+ const bq=$('bq');bq.oninput=e=>{B.q=e.target.value;const p=e.target.selectionStart;browse(k);const n=$('bq');n.focus();n.setSelectionRange(p,p)};
+ document.querySelectorAll('#sheet [data-tipo]').forEach(b=>b.onclick=()=>{B.tipo=b.dataset.tipo;browse(k)});
+ document.querySelectorAll('#sheet [data-niv]').forEach(b=>b.onclick=()=>{B.niv=b.dataset.niv;browse(k)});
+ document.querySelectorAll('#sheet [data-grp]').forEach(b=>b.onclick=()=>{B.grp=b.dataset.grp;browse(k)});
+ document.querySelectorAll('#sheet [data-orig]').forEach(b=>b.onclick=()=>{B.orig=b.dataset.orig;browse(k)});
+ document.querySelectorAll('#sheet [data-b]').forEach(b=>b.onclick=()=>bookView(k,items[+b.dataset.b]));
+ $('manual').onclick=()=>form(k)}
+
+function bookView(k,x){let h=`<button class="back" id="bk">‹ Voltar ao livro</button><h2>${esc(x.nome)}</h2>`+body(k,x)+'<div class="acts">';
+ if(k==='magia')h+=x.niveis.map(([t,n],i)=>`<button class="btn pri" data-add="${i}">Adicionar (${t} ${n})</button>`).join('');
+ else h+=`<button class="btn pri" data-add="0">Adicionar à ficha</button>`;openS(h+'</div>');
+ $('bk').onclick=()=>browse(k);
+ document.querySelectorAll('#sheet [data-add]').forEach(b=>b.onclick=()=>{const L=LIST[k]();
+  if(k==='magia'){const [t,n]=x.niveis[+b.dataset.add];if(L.some(m=>m.ref===x.nome&&m.tipo===t)){toast('Já está na ficha');return}L.push({id:uid(),ref:x.nome,tipo:t,nivel:n})}
+  else{const r=k==='hab'?x.origem+'|'+x.nome:x.nome;if(L.some(m=>m.ref===r)){toast('Já está na ficha');return}L.push({id:uid(),ref:r})}
+  save();render();toast('Adicionado: '+x.nome);browse(k)})}
+
+const SCH={magia:[['nome','Nome'],['tipo','Tipo',['arcana','divina']],['nivel','Nível',['0','1','2','3','4','5','6','7','8','9']],['execucao','Tempo de execução',null,1],['alcance','Alcance',null,1],['alvo','Alvo / Efeito / Área'],['duracao','Duração',null,1],['resistencia','Teste de resistência',null,1],['dano','Dano / cura'],['texto','Como funciona','area']],
+ talento:[['nome','Nome'],['grupo','Grupo',[...GRUPOS,'Outro']],['prereq','Pré-requisitos'],['texto','Como funciona','area']],
+ hab:[['nome','Nome'],['origem','Origem (classe, raça, item…)'],['texto','Como funciona','area']]};
+function form(k,it){const v=it||{};let h=`<h2>${it?'Editar':'Nova entrada'}</h2><form id="ef" style="margin-top:12px"><div class="two">`;
+ for(const [n,l,o,hf] of SCH[k]){const val=v[n]??(Array.isArray(o)?o[0]:'');let inp;
+  if(Array.isArray(o))inp=`<select name="${n}">${o.map(x=>`<option${String(val)===x?' selected':''}>${x}</option>`).join('')}</select>`;
+  else if(o==='area')inp=`<textarea name="${n}">${esc(val)}</textarea>`;else inp=`<input name="${n}" value="${esc(val)}"${n==='nome'?' required':''}>`;
+  h+=`<label style="${hf||Array.isArray(o)&&k==='magia'?'':'grid-column:1/-1'}">${l}${inp}</label>`}
+ openS(h+`</div><div class="acts"><button class="btn pri" type="submit">Salvar</button><button class="btn" type="button" id="cn">Cancelar</button></div></form>`);
+ $('cn').onclick=closeS;$('ef').onsubmit=e=>{e.preventDefault();const d=new FormData(e.target),o=it||{id:uid(),custom:true};
+  SCH[k].forEach(([n])=>o[n]=(d.get(n)||'').trim());if(k==='magia')o.nivel=+o.nivel;if(k==='hab')o.tipo='Personalizada';
+  if(!it)LIST[k]().push(o);save();closeS();q='';render();toast('Salvo: '+o.nome)}}
+
+function perSheet(n){const f=F(),p=C.pericias.find(x=>x.nome===n);if(!p)return;const s=f.per[n]||(f.per[n]={t:0,o:0,nota:''});
+ const upd=()=>{const g=s.t?(+f.nivel||1)+3:half(f);$('pt').textContent=p.treinada&&!s.t?'só treinada':sg(perTot(f,p));
+  $('pb').textContent=`${g} graduações · ${p.atr.toUpperCase()} ${sg(mod(f.attrs[p.atr]))} · outros ${sg(+s.o||0)}${p.armadura&&f.pen?' · armadura −'+f.pen:''}`};
+ openS(`<h2>${esc(n)}</h2><div class="meta">${esc(ATR.find(a=>a[0]===p.atr)[2])}${p.treinada?' · somente treinada':''}${p.armadura?' · penalidade de armadura':''}${deClasse(f,n)?' · de classe':''}</div>
+ <div class="card" style="text-align:center"><div class="num" style="font-size:42px" id="pt"></div><div class="note" id="pb"></div></div>
+ <form id="pf"><label class="chk"><input type="checkbox" name="t"${s.t?' checked':''}> Treinada</label><label style="margin-top:12px">Outros bônus (raça, talentos, itens)<input name="o" type="number" value="${esc(s.o||0)}"></label><label>Suas anotações<textarea name="nota" style="min-height:70px">${esc(s.nota||'')}</textarea></label></form>
+ <div class="acts" style="margin-bottom:14px"><button class="btn pri" id="ok">Pronto</button></div>${paras(p.texto)}`);
+ upd();$('pf').oninput=()=>{const d=new FormData($('pf'));s.t=d.get('t')?1:0;s.o=+d.get('o')||0;s.nota=d.get('nota');upd();save()};$('ok').onclick=()=>{closeS();render()}}
+
+function svSheet(k){const f=F(),[,l,a]=SAVES.find(x=>x[0]===k);
+ const upd=()=>{$('st').textContent=sg(saveTot(f,k,a));$('sb').textContent=`½ nível ${sg(half(f))} · ${a.toUpperCase()} ${sg(mod(f.attrs[a]))} · outros ${sg(+f.sv[k]||0)}`};
+ openS(`<h2>${l}</h2><div class="card" style="text-align:center;margin-top:12px"><div class="num" style="font-size:42px" id="st"></div><div class="note" id="sb"></div></div>
+ <form id="svf"><label>Outros bônus (talentos como ${k==='fort'?'Fortitude Maior':k==='ref'?'Reflexos Rápidos':'Vontade de Ferro'}, raça, itens)<input name="o" type="number" value="${esc(f.sv[k]||0)}"></label></form><div class="acts"><button class="btn pri" id="ok">Pronto</button></div>`);
+ upd();$('svf').oninput=()=>{f.sv[k]=+new FormData($('svf')).get('o')||0;upd();save()};$('ok').onclick=()=>{closeS();render()}}
+
+function fichaSheet(){openS(`<h2>Fichas</h2><div class="list" style="margin-top:12px">${S.fichas.map((f,i)=>`<button class="item" data-i="${i}"><span class="it"><b>${esc(f.nome)}</b><small>${esc([f.raca,f.classe,'nível '+f.nivel].filter(Boolean).join(' · '))}</small></span>${i===S.atual?'<span class="tag">aberta</span>':''}</button>`).join('')}</div>
+ <div class="acts"><button class="btn pri" id="nf">+ Nova ficha</button>${S.fichas.length>1?'<button class="btn del" id="df">Excluir a ficha aberta</button>':''}</div>`);
+ document.querySelectorAll('#sheet [data-i]').forEach(b=>b.onclick=()=>{S.atual=+b.dataset.i;save();closeS();render()});
+ $('nf').onclick=()=>{S.fichas.push(novaFicha());S.atual=S.fichas.length-1;tab='ficha';save();closeS();render()};
+ const df=$('df');if(df)df.onclick=()=>{const i=S.atual,f=S.fichas.splice(i,1)[0];S.atual=0;save();closeS();render();toast('Ficha “'+f.nome+'” excluída',()=>{S.fichas.splice(i,0,f);S.atual=i;save();render()})}}
+
+function expSheet(){const code=JSON.stringify({grim:2,ficha:F()});openS(`<h2>Exportar</h2><p class="note">Copie e envie para a mesa.</p><form><textarea id="code" readonly>${esc(code)}</textarea></form><div class="acts"><button class="btn pri" id="cp">Copiar</button></div>`);
+ $('cp').onclick=async()=>{try{await navigator.clipboard.writeText(code);toast('Copiado!')}catch(e){$('code').select();toast('Selecionado — copie pelo menu')}}}
+function impSheet(){openS(`<h2>Importar</h2><p class="note">Cole o código recebido.</p><form><textarea id="code" placeholder='{"grim":2,...}'></textarea></form><div class="acts"><button class="btn pri" id="mg">Adicionar à minha ficha</button><button class="btn" id="nw">Abrir como ficha nova</button></div><p class="note" id="err"></p>`);
+ const get=()=>{try{const o=JSON.parse($('code').value);if(!o.ficha||!Array.isArray(o.ficha.magias))throw 0;return o.ficha}catch(e){$('err').textContent='Código inválido. Cole o código inteiro.';return null}};
+ const key=x=>x.ref?x.ref+'|'+(x.tipo||''):'c|'+norm(x.nome);
+ $('mg').onclick=()=>{const g=get();if(!g)return;const f=F();let n=0;for(const k of ['magias','talentos','habs']){const have=new Set(f[k].map(key));for(const x of g[k]||[])if(x&&!have.has(key(x))){f[k].push({...x,id:uid()});n++}}save();closeS();render();toast(n+' itens adicionados')};
+ $('nw').onclick=()=>{const g=get();if(!g)return;const base=novaFicha();const f={...base,...g,id:uid(),attrs:{...base.attrs,...g.attrs},pv:{...base.pv,...g.pv},pm:{...base.pm,...g.pm},ca:{...base.ca,...g.ca},sv:{...base.sv,...g.sv}};S.fichas.push(f);S.atual=S.fichas.length-1;save();closeS();render();toast('Ficha importada')}}
+function licSheet(){openS(`<h2>Open Game License</h2><p class="note">Conteúdo Open Game: todo o texto de regras usado aqui. Identidade do Produto (não licenciada): termos do cenário, nomes de personagens, deuses e lugares, ilustrações.</p><div class="lic">${esc(C?C.licenca:'Carregando…')}</div>`)}
+
+function toast(t,fn){$('toastT').textContent=t;undoFn=fn||null;$('undo').hidden=!fn;$('toast').hidden=false;clearTimeout(tTimer);tTimer=setTimeout(()=>$('toast').hidden=true,4500)}
+$('undo').onclick=()=>{if(undoFn)undoFn();undoFn=null;$('toast').hidden=true};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;q='';render();scrollTo(0,0)});
+document.querySelectorAll('.pool button').forEach(b=>b.onclick=()=>{const p=F()[b.dataset.p];p.a=Math.max(0,Math.min(p.m,p.a+ +b.dataset.d));save();head()});
+$('swap').onclick=fichaSheet;
+render();
+
+fetch('compendio.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{C=d;
+ d.magias.forEach(m=>MAG[m.nome]=m);d.talentos.forEach(t=>TAL[t.nome]=t);d.habilidades.forEach(h=>HAB[h.origem+'|'+h.nome]=h);d.pericias.forEach(p=>PER[p.nome]=p);d.classes.forEach(c=>CLS[c.nome]=c);
+ $('sync').textContent='Salvo neste aparelho · funciona offline';render()})
+ .catch(()=>{$('sync').textContent='Não consegui carregar o livro — entradas próprias continuam funcionando';});
+
+
+}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
