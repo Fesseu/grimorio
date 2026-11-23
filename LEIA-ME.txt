@@ -21,7 +21,7 @@ As fichas ficam salvas no celular de cada um. Para passar fichas ou magias
 entre jogadores, use Ficha > Exportar código / Importar.
 
 Para atualizar: substitua os arquivos no repositório e mude a primeira linha
-do sw.js (grimorio-v1 -> grimorio-v2) para os celulares buscarem a nova versão.
+do sw.js (grimorio-v2 -> grimorio-v3) para os celulares buscarem a nova versão.
 
 Licença: os textos de regras são Conteúdo Open Game do Tormenta RPG — Módulo
 Básico (Jambô Editora, 2010), sob a Open Game License 1.0a, cuja cópia está
